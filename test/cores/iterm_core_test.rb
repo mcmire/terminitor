@@ -1,6 +1,6 @@
 require File.expand_path('../../teststrap',__FILE__)
 
-on_platform "darwin" do 
+on_platform "darwin" do
 
   context "ItermCore" do
     setup do
@@ -8,7 +8,7 @@ on_platform "darwin" do
         stub(core).app('iTerm')           { mock!.terminals { true } }
         stub(core).load_termfile('/path/to') { true }
       end
-     @iterm_core = Terminitor::ItermCore.new('/path/to')  
+     @iterm_core = Terminitor::ItermCore.new('/path/to')
     end
 
 
@@ -17,6 +17,15 @@ on_platform "darwin" do
       mock(core).current_terminal.stub!.launch_(:session => 'New session')
       core.open_tab
     end.nil
+
+    asserts "#open_tab sets the name of a tab if given" do
+      core = topic.dup
+      name = mock!.set("foo")
+      session = stub!.name { name }
+      terminal = stub!.launch_(:session => 'New session') { session }
+      stub(core).current_terminal { terminal }
+      core.open_tab(:name => "foo")
+    end
 
     asserts "#open_window creates a new session" do
       core = topic.dup

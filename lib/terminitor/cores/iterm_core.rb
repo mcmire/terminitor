@@ -28,13 +28,15 @@ module Terminitor
       end
     end
 
-    # Opens a new tab, iterm sets focus on new tab 
+    # Opens a new tab, iterm sets focus on new tab
     # TODO : handle options (?)
-    def open_tab(options = nil)
-      current_terminal.launch_ :session => 'New session'
+    def open_tab(options = {})
+      session = current_terminal.launch_ :session => 'New session'
+      session.name.set(options[:name]) if options[:name]
+      session
     end
 
-    # Open new window, applies settings to the first tab. iterm sets focus on 
+    # Open new window, applies settings to the first tab. iterm sets focus on
     # new tab
     # TODO : handle options (?)
     def open_window(options = nil)
@@ -42,7 +44,7 @@ module Terminitor
       window.launch_ :session => 'New session'
     end
 
-    # Returns the active window i.e. the active terminal session in iTerm 
+    # Returns the active window i.e. the active terminal session in iTerm
     def active_window
       current_terminal.current_session
     end
@@ -63,7 +65,7 @@ module Terminitor
             puts "Error: invalid settings set '#{value}'"
           end
         when :bounds # works only for windows, for example :bounds => [10,20,300,200]
-          # the only working sequence to restore window size and position! 
+          # the only working sequence to restore window size and position!
           object.bounds.set(value)
           object.frame.set(value)
           object.position.set(value)
@@ -85,7 +87,7 @@ module Terminitor
 
     # Apply delayed options and remove them from the queue
     def set_delayed_options
-      @delayed_options.length.times do 
+      @delayed_options.length.times do
         option = @delayed_options.shift
         option[:object].instance_eval(option[:option]).set(option[:value])
       end
@@ -125,7 +127,7 @@ module Terminitor
         # if tab_content hash has a key :panes we know this tab should be split
         # we can execute tab commands if there is no key :panes
         if tab_content.key?(:panes)
-          handle_panes(tab_content) 
+          handle_panes(tab_content)
         else
           tab_content[:commands].each { |cmd| execute_command(cmd, :in => tab) }
         end
@@ -147,10 +149,10 @@ module Terminitor
         pane_content = panes[pane_key]
         unless first_pane
           split_v
-          split_v_counter += 1 
+          split_v_counter += 1
         end
         first_pane = false if first_pane
-        pane_commands = pane_content[:commands] 
+        pane_commands = pane_content[:commands]
         execute_pane_commands(pane_commands, tab_commands)
       end
       split_v_counter.times { select_pane 'Left' }
@@ -241,8 +243,8 @@ module Terminitor
     # Add option to the list of delayed options
     def delayed_option(option, value, object)
       @delayed_options << {
-        :option => option.to_s, 
-        :value => value, 
+        :option => option.to_s,
+        :value => value,
         :object => object
       }
     end
